@@ -36,6 +36,17 @@ def stub_schedule(monkeypatch):
 
 
 def test_main_schedules_jobs(stub_schedule, monkeypatch):
+    monkeypatch.setattr(main, 'fetch_minecraft_prices', lambda: {})
+    monkeypatch.setattr(main, 'fetch_free_games',       lambda: [])
+    called = {'init': False}
+
+    class DummyNotifier:
+        def __init__(self): pass
+        def send_email(self, *args, **kwargs): pass
+        def send_whatsapp(self, *args, **kwargs): pass
+        def check_whatsapp_connection_and_notify(self): pass
+    monkeypatch.setattr(main, 'Notifier', DummyNotifier)
+
     called = {'init': False}
     monkeypatch.setattr(main, 'init_db', lambda: called.__setitem__('init', True))
 
@@ -48,7 +59,6 @@ def test_main_schedules_jobs(stub_schedule, monkeypatch):
     assert check_free_games_and_notify in stub_schedule.jobs, \
         "Função de checar jogos grátis deve ser agendada"
     assert any(
-        hasattr(job, "__func__")
-        and job.__func__ is Notifier.check_whatsapp_connection_and_notify
+        getattr(job, "__func__", job) is main.Notifier.check_whatsapp_connection_and_notify
         for job in stub_schedule.jobs
     ), "Função de checar conexão do WhatsApp deve ser agendada"
