@@ -11,8 +11,24 @@ from database import init_db
 def main():
     init_db()
     notifier = Notifier()
-    prices = fetch_minecraft_prices()
-    games = fetch_free_games()
+
+    try:
+        prices = fetch_minecraft_prices()
+    except Exception as e:
+        notifier.send_email(
+            "❌ Erro no scraping inicial do Minecraft",
+            f"Ocorreu um erro ao buscar preços no Minecraft:\n{e}"
+        )
+        prices = {}
+
+    try:
+        games = fetch_free_games()
+    except Exception as e:
+        notifier.send_email(
+            "❌ Erro no scraping inicial da Epic",
+            f"Ocorreu um erro ao buscar jogos grátis na Epic:\n{e}"
+        )
+        games = []
 
     lines = ["✅ Serviço conectado e scraping inicial:"]
     lines.append("\n💰 Minecraft:")
