@@ -11,6 +11,7 @@ from database import init_db
 def main():
     init_db()
     notifier = Notifier()
+    notifier.send_startup_notification()
     schedule.every(6).hours.do(check_price_and_notify)
     schedule.every(6).hours.do(check_free_games_and_notify)
     schedule.every(1).hours.do(notifier.check_whatsapp_connection_and_notify)
