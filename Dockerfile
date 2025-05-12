@@ -8,7 +8,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN wget -qO- https://dl.google.com/linux/linux_signing_key.pub \
-      | tee /usr/share/keyrings/google-linux-signing-keyring.gpg >/dev/null && \
+      | gpg --dearmor --yes -o /usr/share/keyrings/google-linux-signing-keyring.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-keyring.gpg] \
       http://dl.google.com/linux/chrome/deb/ stable main" \
       > /etc/apt/sources.list.d/google-chrome.list && \
