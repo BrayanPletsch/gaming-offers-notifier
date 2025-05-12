@@ -1,6 +1,10 @@
 from datetime import datetime
 
-import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 
 from database import save_free_games, get_last_free_games
@@ -8,39 +12,37 @@ from notifier import Notifier
 
 
 URL = "https://store.epicgames.com/pt-BR/free-games"
-HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 
 def fetch_free_games():
-    response = requests.get(URL, headers=HEADERS)
-    if response.status_code != 200:
-        raise Exception(f"Erro ao acessar Epic Games Store: {response.status_code}")
+    opts = Options()
+    opts.add_argument("--headless=new")
+    driver = webdriver.Chrome(options=opts)
+    driver.get(URL)
     
-    soup = BeautifulSoup(response.text, "html.parser")
+    WebDriverWait(driver, 20).until(
+        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "[data-component='FreeOfferCard']"))
+    )
+    soup = BeautifulSoup(driver.page_source, "html.parser")
+    driver.quit()
+
     offers = []
 
-    cards = soup.select("div[data-component='FreeOfferCard'] a.css-g3jcms")
-    for a in cards:
+    for a in soup.select("div[data-component='FreeOfferCard'] a.css-g3jcms"):
         title_el = a.select_one("h6")
         title = title_el.text.strip() if title_el else "—"
-
         href = a.get("href", "")
         link = "https://store.epicgames.com" + href
 
-        span = a.select_one("p span")
-        times = span.find_all("time") if span else []
-
+        times = a.select("time")
         if len(times) == 1:
-            start_iso = times[0]["datetime"]
-            end_iso = None
+            start_iso, end_iso = times[0]["datetime"], None
         elif len(times) >= 2:
-            start_iso = times[0]["datetime"]
-            end_iso   = times[1]["datetime"]
+            start_iso, end_iso = times[0]["datetime"], times[1]["datetime"]
         else:
             start_iso = end_iso = None
 
         offers.append((title, link, start_iso, end_iso))
-
     return offers
 
 

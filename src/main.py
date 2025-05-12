@@ -30,7 +30,7 @@ def main():
         )
         games = []
 
-    lines = ["✅ Serviço conectado e scraping inicial:"]
+    lines = ["Serviço conectado e scraping inicial:"]
     lines.append("\n💰 Minecraft:")
     for edition, price in prices.items():
         lines.append(f"- {edition}: R$ {price:.2f}")

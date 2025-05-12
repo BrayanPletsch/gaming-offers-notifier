@@ -29,7 +29,7 @@ class Notifier:
             chrome_opts = Options()
             chrome_opts.add_argument(f'--user-data-dir={config.WHATSAPP_PROFILE}')
             # modo headless: após login inicial, remova se precisar ver o QR code
-            chrome_opts.add_argument('--headless=new')  
+            # chrome_opts.add_argument('--headless=new')  
             chrome_opts.add_argument('--no-sandbox')
             chrome_opts.add_argument('--disable-dev-shm-usage')
             self.driver = webdriver.Chrome(options=chrome_opts)

@@ -1,19 +1,33 @@
-import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 
 from notifier import Notifier
 from database import save_price, get_last_price
 
 
-def fetch_minecraft_prices():
-    url = 'https://www.minecraft.net/pt-br/store/minecraft-java-bedrock-edition-pc'
-    headers = {'User-Agent': 'Mozilla/5.0'}
+URL = "https://www.minecraft.net/pt-br/store/minecraft-java-bedrock-edition-pc"
 
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        raise Exception('Erro ao acessar o site do Minecraft')
-    
-    soup = BeautifulSoup(response.text, 'html.parser')
+
+def fetch_minecraft_prices():
+    opts = Options()
+    opts.add_argument("--headless=new")
+    opts.add_argument("--no-sandbox")
+    opts.add_argument("--disable-dev-shm-usage")
+    driver = webdriver.Chrome(options=opts)
+
+    driver.get(URL)
+    WebDriverWait(driver, 20).until(
+        EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".MC_productHeroB_skuCard"))
+    )
+
+    html = driver.page_source
+    driver.quit()
+
+    soup = BeautifulSoup(html, 'html.parser')
     prices = {}
     cards = soup.select('.MC_productHeroB_skuCard')
 
