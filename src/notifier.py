@@ -76,6 +76,13 @@ class Notifier:
         print('Mensagem enviada no WhatsApp!')
     
     
+    def send_startup_notification(self):
+        subject = "✅ Serviço conectado"
+        body = "O Bot subiu com sucesso e está operacional."
+        self.send_email(subject, body)
+        self.send_whatsapp(body)
+
+
     def check_whatsapp_connection_and_notify(self):
         if not self.enable_whatsapp:
             return
