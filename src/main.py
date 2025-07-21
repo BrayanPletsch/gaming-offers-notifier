@@ -2,8 +2,8 @@ import time
 
 import schedule
 
-from price_minecraft_checker import check_price_and_notify, fetch_minecraft_prices
-from price_epic_checker import check_free_games_and_notify, fetch_free_games
+from price_minecraft_checker import check_price_and_notify, fetch_minecraft_prices, save_price
+from price_epic_checker import check_free_games_and_notify, fetch_free_games, save_free_games
 from notifier import Notifier
 from database import init_db
 
@@ -14,6 +14,8 @@ def main():
 
     try:
         prices = fetch_minecraft_prices()
+        for ed, pr in prices.items():
+            save_price(ed, pr)
     except Exception as e:
         notifier.send_email(
             "❌ Erro no scraping inicial do Minecraft",
@@ -23,6 +25,7 @@ def main():
 
     try:
         games = fetch_free_games()
+        save_free_games(games)
     except Exception as e:
         notifier.send_email(
             "❌ Erro no scraping inicial da Epic",

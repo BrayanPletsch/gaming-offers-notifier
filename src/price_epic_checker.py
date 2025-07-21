@@ -1,4 +1,5 @@
 from datetime import datetime
+import tempfile
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -17,14 +18,23 @@ URL = "https://store.epicgames.com/pt-BR/free-games"
 def fetch_free_games():
     opts = Options()
     opts.add_argument("--headless=new")
+    opts.add_argument("--no-sandbox")
+    opts.add_argument("--disable-dev-shm-usage")
+    opts.add_argument("--disable-gpu")
+    opts.add_argument("--disable-setuid-sandbox")
+    opts.add_argument("--window-size=1920,1080")
+    tmp_profile = tempfile.mkdtemp()
+    opts.add_argument(f"--user-data-dir={tmp_profile}")
     driver = webdriver.Chrome(options=opts)
-    driver.get(URL)
-    
-    WebDriverWait(driver, 20).until(
-        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "[data-component='FreeOfferCard']"))
-    )
-    soup = BeautifulSoup(driver.page_source, "html.parser")
-    driver.quit()
+
+    try:
+        driver.get(URL)
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "[data-component='FreeOfferCard']"))
+        )
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+    finally:
+        driver.quit()
 
     offers = []
 
