@@ -5,7 +5,8 @@ RUN apt-get update && \
       wget gnupg2 unzip \
       libnss3 libgconf-2-4 libxi6 libxrender1 libxrandr2 \
       libgtk-3-0 libxss1 libasound2 \
-      chromium chromium-driver && \
+      chromium chromium-driver \
+      libzbar0 libzbar-dev && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
