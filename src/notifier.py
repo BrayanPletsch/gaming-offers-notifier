@@ -12,6 +12,10 @@ from selenium.webdriver.support import expected_conditions as EC
 
 import config
 
+import base64, io
+from PIL import Image
+from pyzbar.pyzbar import decode
+import qrcode_terminal
 
 class Notifier:
     def __init__(self):
@@ -57,15 +61,27 @@ class Notifier:
         
         driver = self.driver
         driver.get('https://web.whatsapp.com/')
-        try:
-            WebDriverWait(driver, 20).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-testid='chat-list']"))
-            )
-        except:
-            print('Abra o WhatsApp Web localmente e escaneie o QR code aqui:')
-            WebDriverWait(driver, 120).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-testid='chat-list']"))
-            )
+
+        canvas = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'canvas'))
+        )
+
+        # Extrai Data URL do <canvas>
+        data_url = driver.execute_script(
+            "return arguments[0].toDataURL('image/png');",
+            canvas
+        )
+        b64 = data_url.split(',', 1)[1]
+        img = Image.open(io.BytesIO(base64.b64decode(b64)))
+
+        # Decodifica o QR e imprime em ASCII
+        decoded = decode(img)
+        if not decoded:
+            print("Falha ao ler o QR code do canvas.")
+        else:
+            qr_data = decoded[0].data.decode('utf-8')
+            qrcode_terminal.draw(qr_data)
+
         url = f'https://web.whatsapp.com/send?phone={self.phone}&text={message}'
         driver.get(url)
         send_btn = WebDriverWait(driver, 30).until(
